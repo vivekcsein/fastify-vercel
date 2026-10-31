@@ -1,5 +1,5 @@
 import Fastify, { type FastifyInstance } from "fastify";
-import createApp from "../src/app/main";
+import createApp from "./app/main";
 
 const buildApp = async (): Promise<FastifyInstance> => {
   try {
