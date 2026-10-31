@@ -23,8 +23,27 @@ const buildApp = async (): Promise<FastifyInstance> => {
   }
 };
 
-const app = await buildApp();
+const appPromise = buildApp();
 
-// await app.listen({ port: Number(process.env.PORT) || 3000, host: "0.0.0.0" });
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const app = await appPromise;
+    const url = new URL(request.url);
+    const hasBody = request.method !== "GET" && request.method !== "HEAD";
 
-export default app;
+    const res = await app.inject({
+      method: request.method as "GET",
+      url: url.pathname + url.search,
+      headers: Object.fromEntries(request.headers),
+      payload: hasBody ? Buffer.from(await request.arrayBuffer()) : undefined,
+    });
+
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(res.headers)) {
+      if (Array.isArray(value)) value.forEach((v) => headers.append(key, v));
+      else if (value !== undefined) headers.set(key, String(value));
+    }
+
+    return new Response(res.rawPayload, { status: res.statusCode, headers });
+  },
+};
