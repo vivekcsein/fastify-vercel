@@ -1,6 +1,6 @@
 {
   "name": "fastify-vercel",
-  "module": "src/index.ts",
+  "module": "api/index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {

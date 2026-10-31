@@ -25,6 +25,6 @@ const buildApp = async (): Promise<FastifyInstance> => {
 
 const app = await buildApp();
 
-await app.listen({ port: Number(process.env.PORT) || 3000, host: "0.0.0.0" });
+// await app.listen({ port: Number(process.env.PORT) || 3000, host: "0.0.0.0" });
 
 export default app;
