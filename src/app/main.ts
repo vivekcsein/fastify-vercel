@@ -1,12 +1,6 @@
 import Fastify, { LogController, type FastifyInstance } from "fastify";
 import { envAppConfig } from "../packages/env/app.env";
-
-const healthResponse = () => ({
-  success: true,
-  message: "Server is healthy",
-  timestamp: new Date().toISOString(),
-  environment: process.env.NODE_ENV,
-});
+import { registerBootstrap } from "./routes";
 
 const createApp = async (): Promise<FastifyInstance> => {
   const app = Fastify({
@@ -27,8 +21,12 @@ const createApp = async (): Promise<FastifyInstance> => {
     genReqId: () => crypto.randomUUID(),
   });
 
-  app.get("/", async (_req, reply) => reply.status(200).send(healthResponse()));
-  app.get("/health", async (_req, reply) => reply.status(200).send(healthResponse()));
+  // 3. Error and not-found handlers before the routes, so every route inherits them.
+  // await app.register(errorHandler);
+  // await app.register(notFound);
+
+  // 4. Routes. OpenAPI first (see routes.ts), then health, static and the versioned API.
+  await registerBootstrap(app);
 
   return app;
 };
