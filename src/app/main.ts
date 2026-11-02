@@ -1,6 +1,12 @@
 import Fastify, { LogController, type FastifyInstance } from "fastify";
 import { envAppConfig } from "../packages/env/app.env";
 import { registerBootstrap } from "./routes";
+import bodyLimit from "../packages/middlewares/body-limit";
+import compression from "../packages/middlewares/compression";
+import cors from "../packages/middlewares/cors";
+import rateLimiter from "../packages/middlewares/rate-limiter";
+import requestLogging from "../packages/middlewares/request-logging";
+import securityHeaders from "../packages/middlewares/security-headers";
 
 const createApp = async (): Promise<FastifyInstance> => {
   const app = Fastify({
@@ -20,6 +26,16 @@ const createApp = async (): Promise<FastifyInstance> => {
     // Globally unique request ids (Fastify's default is a per-process counter: "req-1").
     genReqId: () => crypto.randomUUID(),
   });
+
+  await app.register(requestLogging);
+  await app.register(securityHeaders);
+
+  // 2. Guards that apply to every request, before any route runs. CORS comes before the
+  //    rate limiter so preflight (OPTIONS) requests are answered before them.
+  await app.register(cors);
+  await app.register(compression);
+  await app.register(bodyLimit);
+  await app.register(rateLimiter);
 
   // 3. Error and not-found handlers before the routes, so every route inherits them.
   // await app.register(errorHandler);
